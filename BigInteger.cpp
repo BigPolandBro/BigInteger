@@ -1,148 +1,106 @@
 #include "BigInteger.h"
 
-//-----------------------------------------------------------------
-//default constructor
-BigInteger::BigInteger()
+
+template class BigInteger<1>;
+template class BigInteger<2>;
+template class BigInteger<3>;
+template class BigInteger<4>;
+template class BigInteger<5>;
+template class BigInteger<6>;
+template class BigInteger<7>;
+template class BigInteger<8>;
+template class BigInteger<9>;
+
+template<int LEN_BASE>
+BigInteger<LEN_BASE>::BigInteger()
 {
-num = {};
+	digits = {};
 }
 
-//
-//constructors
-//
-
-//-----------------------------------------------------------------
-BigInteger::BigInteger(const std::string &s)
+template<int LEN_BASE>
+BigInteger<LEN_BASE>::BigInteger(const std::string& s)
 {
-	num.clear();
-	for (int i = s.size(); i > 0; i -= lenBase)
+	digits.clear();
+	for (int i = s.size(); i > 0; i -= LEN_BASE)
 	{
-		int start = i - lenBase >= 0 ? i - lenBase : 0;
-		num.push_back(stoi(s.substr(start, i - start)));
+		int start = i - LEN_BASE >= 0 ? i - LEN_BASE : 0;
+		digits.push_back(stoi(s.substr(start, i - start)));
 	}
 }
 
-//-----------------------------------------------------------------
-BigInteger::BigInteger(char* s)
+template<int LEN_BASE>
+BigInteger<LEN_BASE>::BigInteger(char* s)
 {
-	num.clear();
-	for (int i = strlen(s); i > 0; i -= lenBase)
+	digits.clear();
+	for (int i = strlen(s); i > 0; i -= LEN_BASE)
 	{
-		char *start = (i - lenBase >= 0 ? s + i - lenBase : s);
+		char *start = (i - LEN_BASE >= 0 ? s + i - LEN_BASE : s);
 		s[i] = 0;
-		num.push_back(atoi(start));
+		digits.push_back(atoi(start));
 	}
 }
 
-//-----------------------------------------------------------------
-BigInteger::BigInteger(int x)
+template<int LEN_BASE>
+BigInteger<LEN_BASE>::BigInteger(int x)
 {
-	num.clear();
-	num = { x };
+	digits.clear();
+	digits = { x };
 }
 
-//-----------------------------------------------------------------
-//copy constructor
-BigInteger::BigInteger(const BigInteger &x)
+template<int LEN_BASE>
+BigInteger<LEN_BASE>::BigInteger(const BigInteger<LEN_BASE>& x)
 {
-	this->num = x.num;
+	this->digits = x.digits;
 }
 
-//-----------------------------------------------------------------
-//destructor
-BigInteger::~BigInteger()
+template<int LEN_BASE>
+bool BigInteger<LEN_BASE>::empty() const
 {
-	num.clear();
+	return digits.size() == 0;
 }
 
-//-----------------------------------------------------------------
-//check if it is empty
-bool BigInteger::empty() const
+template<int LEN_BASE>
+BigInteger<LEN_BASE>& BigInteger<LEN_BASE>::operator=(const BigInteger<LEN_BASE>& x)
 {
-	return num.size() == 0;
-}
+	if (&x == this)
+	{
+		return *this;
+	}
 
-//
-//operators
-//
-
-//-----------------------------------------------------------------
-BigInteger& BigInteger::operator=(const BigInteger &x)
-{
-	if (&x == this)return *this;
-
-	num = x.num;
+	digits = x.digits;
 
 	return *this;
 }
 
-//-----------------------------------------------------------------
-//c-style cast
-BigInteger::operator int()
+template<int LEN_BASE>
+BigInteger<LEN_BASE>::operator int()
 {
-	try
+	int answer = 0;
+	if (!fitsIntoInt(answer))
 	{
-		if (num.size() > 2)
-		{
-			throw(-1);
-		}
+		throw std::runtime_error("Cannot be converted to int!");
 	}
-	catch (int x)
-	{
-		std::cout << "Cannot fit in integer type\n";
-		return x;
-	}
-
-	if (num.empty())return 0;
-
-	int ans = num[0];
-
-	if (num.size() == 1)
-	{
-		return ans;
-	}
-	else
-	{
-		try
-		{
-			if (num[1] > 2 || ans > INT_MAX - num[1] * base)
-			{
-				throw(-1);
-			}
-			else
-			{
-				ans += num[1] * base;
-				return ans;
-			}
-		}
-		catch (int x)
-		{
-			std::cout << "Cannot fit in integer type\n";
-			return x;
-		}
-	}
+	return answer;
 }
 
-//
 //addition
-//
 
-//-----------------------------------------------------------------
-BigInteger& BigInteger::operator+=(const BigInteger& x)
+template<int LEN_BASE>
+BigInteger<LEN_BASE>& BigInteger<LEN_BASE>::operator+=(const BigInteger<LEN_BASE>& x)
 {
-	int n = num.size();
-	int m = x.num.size();
+	int n = digits.size();
+	int m = x.digits.size();
 
-	int carry = 0;
+	bool carry = 0;
 	for (int i = 0; i < std::max(n, m) || carry; i++)
 	{
-		if (i >= n)num.push_back(0);
-		num[i] += (i < m ? x.num[i] : 0) + carry;
+		if (i >= n)digits.push_back(0);
+		digits[i] += (i < m ? x.digits[i] : 0) + carry;
 
 		carry = 0;
-		if (num[i] > base)
+		if (digits[i] > BASE)
 		{
-			num[i] -= base;
+			digits[i] -= BASE;
 			carry = 1;
 		}
 	}
@@ -150,49 +108,45 @@ BigInteger& BigInteger::operator+=(const BigInteger& x)
 	return *this;
 }
 
-//-----------------------------------------------------------------
-const BigInteger BigInteger::operator+(const BigInteger& x) const
+template<int LEN_BASE>
+const BigInteger<LEN_BASE> BigInteger<LEN_BASE>::operator+(const BigInteger<LEN_BASE>& x) const
 {
-	BigInteger res = *this;
+	BigInteger<LEN_BASE> res = *this;
 	return res += x;
 }
 
-//-----------------------------------------------------------------
-//pre-increment
-BigInteger& BigInteger::operator++()
+template<int LEN_BASE>
+BigInteger<LEN_BASE>& BigInteger<LEN_BASE>::operator++()
 {
 	return *this += 1;
 }
 
-//-----------------------------------------------------------------
-//post-increment
-const BigInteger BigInteger::operator++(int)
+template<int LEN_BASE>
+const BigInteger<LEN_BASE> BigInteger<LEN_BASE>::operator++(int)
 {
-	BigInteger tmp = *this;
+	BigInteger<LEN_BASE> tmp = *this;
 	*this += 1;
 	return tmp;
 }
 
-//
-//subtraction
-//
+// subtraction
 
-//-----------------------------------------------------------------
-//if *this >= x
-BigInteger& BigInteger::operator-=(const BigInteger& x)
+// *this should be >= x
+template<int LEN_BASE>
+BigInteger<LEN_BASE>& BigInteger<LEN_BASE>::operator-=(const BigInteger<LEN_BASE>& x)
 {
-	int n = num.size();
-	int m = x.num.size();
+	int n = digits.size();
+	int m = x.digits.size();
 
-	int carry = 0;
+	bool carry = 0;
 	for (int i = 0; i < m || carry; i++)
 	{
-		num[i] -= carry + (i < m ? x.num[i] : 0);
+		digits[i] -= carry + (i < m ? x.digits[i] : 0);
 
 		carry = 0;
-		if (num[i] < 0)
+		if (digits[i] < 0)
 		{
-			num[i] += base;
+			digits[i] += BASE;
 			carry = 1;
 		}
 	}
@@ -202,36 +156,34 @@ BigInteger& BigInteger::operator-=(const BigInteger& x)
 	return *this;
 }
 
-//-----------------------------------------------------------------
-const BigInteger BigInteger::operator-(const BigInteger& x) const
+template<int LEN_BASE>
+const BigInteger<LEN_BASE> BigInteger<LEN_BASE>::operator-(const BigInteger<LEN_BASE>& x) const
 {
-	BigInteger res = *this;
+	BigInteger<LEN_BASE> res = *this;
 	return res -= x;
 }
 
-//
-//multiplication
-//
+// multiplication
 
-//-----------------------------------------------------------------
-BigInteger& BigInteger::operator*=(const int& x)
+template<int LEN_BASE>
+BigInteger<LEN_BASE>& BigInteger<LEN_BASE>::operator*=(const int& x)
 {
-	int n = num.size();
+	int n = digits.size();
 
 	int carry = 0;
 	for (int i = 0; i < n || carry; i++)
 	{
-		if (i >= num.size())
+		if (i >= digits.size())
 		{
-			num.push_back(0);
+			digits.push_back(0);
 		}
 
-		long long val = (i < n ? num[i] : 0);
+		long long val = (i < n ? digits[i] : 0);
 		val *= x;
 		val += carry;
 
-		num[i] = val % base;
-		carry = val / base;
+		digits[i] = val % BASE;
+		carry = val / BASE;
 	}
 
 	removeLeadingZeros();
@@ -239,14 +191,14 @@ BigInteger& BigInteger::operator*=(const int& x)
 	return *this;
 }
 
-//-----------------------------------------------------------------
-BigInteger& BigInteger::operator*=(const BigInteger& x)
+template<int LEN_BASE>
+BigInteger<LEN_BASE>& BigInteger<LEN_BASE>::operator*=(const BigInteger<LEN_BASE>& x)
 {
-	int n = num.size();
-	int m = x.num.size();
+	int n = digits.size();
+	int m = x.digits.size();
 
-	BigInteger y = *this;
-	num.assign(n + m, 0);
+	BigInteger<LEN_BASE> y = *this;
+	digits.assign(n + m, 0);
 
 	for (int j = 0; j < m; j++)
 	{
@@ -254,17 +206,17 @@ BigInteger& BigInteger::operator*=(const BigInteger& x)
 			
 		for(int i = 0; i < n || carry; i++)
 		{
-			if (i + j >= num.size())
+			if (i + j >= digits.size())
 			{
-				num.push_back(0);
+				digits.push_back(0);
 			}
 
-			long long val = (i < n ? y.num[i] : 0);
-			val *= x.num[j];
+			long long val = (i < n ? y.digits[i] : 0);
+			val *= x.digits[j];
 			val += carry;
 
-			num[i + j] += val % base;
-			carry = val / base;
+			digits[i + j] += val % BASE;
+			carry = val / BASE;
 		}
 	}
 
@@ -273,33 +225,31 @@ BigInteger& BigInteger::operator*=(const BigInteger& x)
 	return *this;
 }
 
-//-----------------------------------------------------------------
-const BigInteger BigInteger::operator*(const int& x)const
+template<int LEN_BASE>
+const BigInteger<LEN_BASE> BigInteger<LEN_BASE>::operator*(const int& x) const
 {
-	BigInteger res = *this;
+	BigInteger<LEN_BASE> res = *this;
 	return res *= x;
 }
 
-//-----------------------------------------------------------------
-const BigInteger BigInteger::operator*(const BigInteger& x)const
+template<int LEN_BASE>
+const BigInteger<LEN_BASE> BigInteger<LEN_BASE>::operator*(const BigInteger<LEN_BASE>& x) const
 {
-	BigInteger res = *this;
+	BigInteger<LEN_BASE> res = *this;
 	return res *= x;
 }
 
-//
-//division
-//
+// division
 
-//-----------------------------------------------------------------
-BigInteger& BigInteger::operator/=(const int& x)
+template<int LEN_BASE>
+BigInteger<LEN_BASE>& BigInteger<LEN_BASE>::operator/=(const int& x)
 {
 	int carry = 0;
-	int n = num.size();
+	int n = digits.size();
 	for (int i = n - 1; i >= 0; -- i)
 	{
-		long long val = num[i] + base*carry;
-		num[i] = val / x;
+		long long val = digits[i] + (long long)BASE*carry;
+		digits[i] = val / x;
 		carry = val % x;
 	}
 
@@ -307,15 +257,15 @@ BigInteger& BigInteger::operator/=(const int& x)
 	return *this;
 }
 
-//-----------------------------------------------------------------
-const BigInteger BigInteger::operator/(const int& x)const
+template<int LEN_BASE>
+const BigInteger<LEN_BASE> BigInteger<LEN_BASE>::operator/(const int& x) const
 {
-	BigInteger res = *this;
+	BigInteger<LEN_BASE> res = *this;
 	return res /= x;
 }
 
-//-----------------------------------------------------------------
-BigInteger& BigInteger::operator/=(const BigInteger& x)
+template<int LEN_BASE>
+BigInteger<LEN_BASE>& BigInteger<LEN_BASE>::operator/=(const BigInteger<LEN_BASE>& x)
 {
 	if (*this < x)
 	{
@@ -324,100 +274,101 @@ BigInteger& BigInteger::operator/=(const BigInteger& x)
 	}
 
 	//this >= x
-	int n = num.size();
+	int n = digits.size();
 	for (int i = n - 1; i >= 0; i--)
 	{
 		//TO DO
 	}
 }
 
-//
-//comparison operators
-//
+// comparison operators
 
-//-----------------------------------------------------------------
-bool BigInteger::operator<(const BigInteger& x) const
+template<int LEN_BASE>
+bool BigInteger<LEN_BASE>::operator<(const BigInteger<LEN_BASE>& x) const
 {
-	int n = num.size();
-	int m = x.num.size();
+	int n = digits.size();
+	int m = x.digits.size();
 
-	if (n < m)return true;
-	if (n > m)return false;
+	if (n < m)
+	{
+		return true;
+	}
+
+	if (n > m)
+	{
+		return false;
+	}
 
 	//n == m
 	for (int i = n - 1; i >= 0; i--)
 	{
-		if (num[i] < x.num[i])return true;
-		if (num[i] > x.num[i])return false;
+		if (digits[i] < x.digits[i])
+		{
+			return true;
+		}
+
+		if (digits[i] > x.digits[i])
+		{
+			return false;
+		}
 	}
 	return false;
 }
 
-//-----------------------------------------------------------------
-bool BigInteger::operator>(const BigInteger& x)const
+template<int LEN_BASE>
+bool BigInteger<LEN_BASE>::operator>(const BigInteger<LEN_BASE>& x) const
 {
 	return x < *this;
 }
 
-//-----------------------------------------------------------------
-bool BigInteger::operator<=(const BigInteger& x)const
+template<int LEN_BASE>
+bool BigInteger<LEN_BASE>::operator<=(const BigInteger<LEN_BASE>& x) const
 {
 	return !(*this > x);
 }
 
-//-----------------------------------------------------------------
-bool BigInteger::operator>=(const BigInteger& x)const
+template<int LEN_BASE>
+bool BigInteger<LEN_BASE>::operator>=(const BigInteger<LEN_BASE>& x) const
 {
 	return !(*this < x);
 }
 
-//-----------------------------------------------------------------
-bool BigInteger::operator==(const BigInteger& x)const
+template<int LEN_BASE>
+bool BigInteger<LEN_BASE>::operator==(const BigInteger<LEN_BASE>& x) const
 {
 	return !(*this < x || *this > x);
 }
 
-//-----------------------------------------------------------------
-bool BigInteger::operator!=(const BigInteger& x)const
+template<int LEN_BASE>
+bool BigInteger<LEN_BASE>::operator!=(const BigInteger<LEN_BASE>& x) const
 {
 	return !(*this == x);
 }
 
-//
-//input-output
-//
-
-//-----------------------------------------------------------------
-std::ostream& operator<<(std::ostream& out, const BigInteger& x)
+template<int LEN_BASE>
+void BigInteger<LEN_BASE>::removeLeadingZeros()
 {
-	out << (x.empty() ? 0 : x.num.back());
-	for (int i = (int)x.num.size() - 2; i >= 0; --i)
+	while (digits.size() > 1 && digits.back() == 0)
+		digits.pop_back();
+}
+
+template<int LEN_BASE>
+bool BigInteger<LEN_BASE>::fitsIntoInt(int &x) const
+{
+	if (digits.empty())
 	{
-		std::string s = std::to_string(x.num[i]);
-		std::string t;
-		int leadingZeros = BigInteger::lenBase - s.size();
-		while (leadingZeros--) t += '0';
-		t += s;
-
-		out << t;
+		return true;
 	}
-	return out;
-}
 
-//-----------------------------------------------------------------
-std::istream& operator>>(std::istream& in, BigInteger& x)
-{
-	std::string s;
-	in >> s;
-	x = BigInteger(s);
-	return in;
-}
+	long long ans = 0;
+	for (int i = digits.size() - 1; i >= 0; i--)
+	{
+		ans = ans*BASE + digits[i];
+		if (ans > INT_MAX)return false;
+	}
 
-//-----------------------------------------------------------------
-void BigInteger::removeLeadingZeros()
-{
-	while (num.size() > 1 && num.back() == 0)
-		num.pop_back();
+	x = ans;
+	return true;
 }
 
 

@@ -1,21 +1,23 @@
 #include "BigInteger.h"
 
+using StandardBigInt = BigInteger<9>;
+
 int main()
 {
 	goto test;
 
 	//declaration and input/output
 	{
-		BigInteger x;
+		StandardBigInt x;
 		std::cin >> x;
 		std::cout << x << '\n';
 		return 0;
 	}
 
-	//BigInteger to int
+	//StandardBigInt to int
 	//int y = x; --> cannot do it as keyword explicit is used
 	{
-		BigInteger x = std::string("123462386458754658365474746537254635487638476583");
+		StandardBigInt x = std::string("123462386458754658365474746537254635487638476583");
 		int y = int(x);
 		std::cout << y << '\n';
 		return 0;
@@ -23,9 +25,9 @@ int main()
 
 	//addition
 	{
-		BigInteger x = std::string("123462386458754658365474746537254635487638476583");
-		BigInteger a = 3'746'373;
-		BigInteger y = x;
+		StandardBigInt x = std::string("123462386458754658365474746537254635487638476583");
+		StandardBigInt a = 3'746'373;
+		StandardBigInt y = x;
 		y += a;
 		std::cout << x + a << '\n';
 		std::cout << y << '\n';
@@ -34,11 +36,11 @@ int main()
 
 	//subtraction
 	{
-		BigInteger x = std::string("123462386458754658365474746537254635487638476583");
-		BigInteger a = 3'746'373;
+		StandardBigInt x = std::string("123462386458754658365474746537254635487638476583");
+		StandardBigInt a = 3'746'373;
 		x += a;
 
-		BigInteger y = x;
+		StandardBigInt y = x;
 		y -= a;
 
 		std::cout << (x - a) << '\n';
@@ -48,8 +50,8 @@ int main()
 
 	//multiplication
 	{
-		BigInteger a = std::string("1233465738568765376537864");
-		BigInteger b = 123;
+		StandardBigInt a = std::string("1233465738568765376537864");
+		StandardBigInt b = 123;
 		//std::cout << a << " " << b << '\n';
 
 		std::cout << a * b << '\n';
@@ -60,7 +62,7 @@ int main()
 test:
 	//division
 	{
-		BigInteger a = std::string("123456789101112131415");
+		StandardBigInt a = std::string("123456789101112131415348956985829360547348653895462965");
 		int b = 3;
 
 		std::cout << a << "\n";

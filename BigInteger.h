@@ -5,102 +5,109 @@
 #include "string"
 #include "algorithm"
 
+template<int LEN_BASE>
 class BigInteger
 {
 public:
 	BigInteger();
 
-	//constructors
-	BigInteger(const std::string &s);
+	BigInteger(const std::string& s);
 
 	BigInteger(char* s);
 
 	BigInteger(int x);
 
-	//copy constructor
+	BigInteger(const BigInteger& x);
 
-	BigInteger(const BigInteger &x);
-
-	//destructor
-
-	~BigInteger();
-
-	//check if it is empty
 	bool empty() const;
 
-	//operators
-
-	BigInteger& operator=(const BigInteger &x);
-
-	//c-style cast
+	BigInteger& operator=(const BigInteger& x);
 
 	explicit operator int();
 
-	//addition
+	// addition
 
 	BigInteger& operator+=(const BigInteger& x);
 
 	const BigInteger operator+(const BigInteger& x) const;
 
-	//pre-increment
 	BigInteger& operator++();
 
-	//post-increment
 	const BigInteger operator++(int);
 
-	//subtraction
+	// subtraction
 
-	//if *this >= x
+	// *this should be >= x
+
 	BigInteger& operator-=(const BigInteger& x);
 
 	const BigInteger operator-(const BigInteger& x) const;
 
-	//multiplication
+	// multiplication
 
 	BigInteger& operator*=(const int& x);
 
 	BigInteger& operator*=(const BigInteger& x);
 
-	const BigInteger operator*(const int& x)const;
+	const BigInteger operator*(const int& x) const;
 
-	const BigInteger operator*(const BigInteger& x)const;
+	const BigInteger operator*(const BigInteger& x) const;
 
-	//division
+	// division
 
 	BigInteger& operator/=(const int& x);
 
-	const BigInteger operator/(const int& x)const;
+	const BigInteger operator/(const int& x) const;
 
 	BigInteger& operator/=(const BigInteger& x);
 
-	//comparison operators
+	// comparison operators
 
 	bool operator<(const BigInteger& x) const;
 
-	bool operator>(const BigInteger& x)const;
+	bool operator>(const BigInteger& x) const;
 
-	bool operator<=(const BigInteger& x)const;
+	bool operator<=(const BigInteger& x) const;
 
-	bool operator>=(const BigInteger& x)const;
+	bool operator>=(const BigInteger& x) const;
 
-	bool operator==(const BigInteger& x)const;
+	bool operator==(const BigInteger& x) const;
 
-	bool operator!=(const BigInteger& x)const;
+	bool operator!=(const BigInteger& x) const;
 
-	//input-output
+	// input-output
 
-	friend std::ostream& operator<<(std::ostream& out, const BigInteger& x);
+	friend std::ostream& operator<<(std::ostream& out, const BigInteger<LEN_BASE>& x)
+	{
+		out << (x.empty() ? 0 : x.digits.back());
+		for (int i = (int)x.digits.size() - 2; i >= 0; --i)
+		{
+			std::string s = std::to_string(x.digits[i]);
+			std::string t;
+			int leadingZeros = LEN_BASE - s.size();
+			while (leadingZeros--) t += '0';
+			t += s;
 
-	friend std::istream& operator>>(std::istream& in, BigInteger& x);
+			out << t;
+		}
+		return out;
+	}
+
+	friend std::istream& operator>>(std::istream& in, BigInteger& x)
+	{
+		std::string s;
+		in >> s;
+		x = BigInteger(s);
+		return in;
+	}
 
 private:
-	std::vector<int> num;
-	static const int base = 1000 * 1000 * 1000;
-	static const int lenBase = 9;
-	//static const int base = 10;
-	//static const int lenBase = 1;
+	std::vector<int> digits;
+	const int BASE = pow(10, LEN_BASE);
 
 	void removeLeadingZeros();
+
+	bool fitsIntoInt(int &x) const;
 };
 
 
